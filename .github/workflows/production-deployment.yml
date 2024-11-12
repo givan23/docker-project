@@ -1,0 +1,77 @@
+name: Production Deployment
+run-name: ${{ github.actor }} is deploying to production 🚀
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  packages: write  # Update to write permission
+
+jobs:
+  Explore-GitHub-Actions:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Update Node.js version to 18
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run formatter
+        run: npm run format
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Generate code coverage
+        run: npm run coverage
+
+      - name: Run smoke tests
+        run: npm run smoke-test --passWithNoTests
+
+      - name: Run performance tests
+        run: npm run performance-test --passWithNoTests
+
+      - name: Deployment verification
+        run: npm run verify-deployment --passWithNoTests
+
+      # ATTENTION the TOKEN (classic) --> secrets.GHCR_PAT has an expiration date, so you need to update it after 30 days
+      # ATTENTION you can find the HEROKU_API_KEY in the Heroku account settings
+      - name: Build Docker image
+        run: |
+          docker build -t docker-project-image:latest .
+          echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin 
+          docker tag docker-project-image:latest ghcr.io/${{ github.repository }}/docker-project-image:latest
+          docker push ghcr.io/${{ github.repository }}/docker-project-image:latest
+          echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
+          docker tag docker-project-image:latest registry.heroku.com/docker-project-app/web
+          docker push registry.heroku.com/docker-project-app/web
+
+      - name: Release Docker image on Heroku
+        run: heroku container:release web -a docker-project-app
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
