@@ -1,0 +1,76 @@
+name: Development Workflow
+run-name: ${{ github.actor }} is testing/developing 🚀
+
+on:
+  push:
+    branches-ignore:
+      - main  # Ignora i push sul branch main
+
+jobs:
+  Test-Dev-Job:
+    runs-on: ubuntu-latest  # Utilizza l'ultima versione di Ubuntu come ambiente di esecuzione
+
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+      - name: Check out repository code
+        uses: actions/checkout@v4  # Clona il repository
+
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}  # Elenca i file nel repository
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Imposta la versione di Node.js su 16
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps  # Installa le dipendenze del progetto
+
+      - name: Build project
+        run: npm run build  # Compila il progetto
+
+      - name: Analyze bundle
+        run: npm run analyze  # Analizza il bundle
+
+      - name: Run formatter
+        run: npm run format  # Esegue il formattatore di codice
+
+      - name: Run linter
+        run: npm run lint  # Esegue il linter
+
+      - name: Run security audit
+        run: npm audit --audit-level=high || true  # Esegue l'audit di sicurezza, ma non fallisce in caso di vulnerabilità
+
+      - name: Run unit tests
+        run: npm test  # Esegue i test unitari
+
+      - name: Generate code coverage
+        run: npm run coverage  # Genera il report di copertura del codice
+
+      - name: Type checking
+        run: npm run type-check  # Esegue il controllo dei tipi
+
+      - name: Check for dependency updates
+        run: npm outdated  # Controlla se ci sono aggiornamenti per le dipendenze
+
+      - name: Static code analysis
+        run: npm run static-analysis  # Esegue l'analisi statica del codice
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."  # Mostra lo stato del job
+      - name: Create completion artifact
+        if: success()
+        run: echo "Development workflow completed" > completion.txt
+
+      - name: Upload completion artifact
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dev-workflow-completion
+          path: completion.txt
