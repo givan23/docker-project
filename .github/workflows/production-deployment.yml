@@ -1,5 +1,5 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+name: Production Deployment
+run-name: ${{ github.actor }} is deploying to production 🚀
 on: [push]
 jobs:
   Explore-GitHub-Actions:
@@ -21,6 +21,8 @@ jobs:
           node-version: '16'
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+      - name: Build project
+        run: npm run build
       - name: Run formatter
         run: npm run format
       - name: Run unit tests
