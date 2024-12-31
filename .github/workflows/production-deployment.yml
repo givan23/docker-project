@@ -2,21 +2,20 @@ name: Production Deployment
 run-name: ${{ github.actor }} is deploying to production 🚀
 
 on:
-  workflow_run:
-    workflows: ["Development Workflow"]
-    types:
-      - completed
+  repository_dispatch:
+    types: [production_deployment]
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  packages: read
 
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest  # Use the latest version of Ubuntu as the runner environment
 
     steps:
-      - name: Download completion artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dev-workflow-completion
-
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
