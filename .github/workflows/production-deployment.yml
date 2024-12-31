@@ -69,7 +69,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: Deployment Successful
           body: The deployment was successful!
-          to: recipient@example.com
-          from: sender@example.com
+          to: ${{ secrets.EMAIL_USERNAME }}
+          from: ${{ secrets.EMAIL_USERNAME }}
 
       - run: echo "🍏 This job's status is ${{ job.status }}."  # Display the job status
