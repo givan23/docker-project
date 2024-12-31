@@ -4,11 +4,17 @@ run-name: ${{ github.actor }} is testing/developing 🚀
 on:
   push:
     branches-ignore:
-      - main  # Ignora i push sul branch main
+      - main  # Ignore pushes to the main branch
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  packages: read
 
 jobs:
   Test-Dev-Job:
-    runs-on: ubuntu-latest  # Utilizza l'ultima versione di Ubuntu come ambiente di esecuzione
+    runs-on: ubuntu-latest  # Use the latest version of Ubuntu as the runner environment
 
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -16,61 +22,60 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
 
       - name: Check out repository code
-        uses: actions/checkout@v4  # Clona il repository
+        uses: actions/checkout@v4  # Clone the repository
 
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
 
       - name: List files in the repository
         run: |
-          ls ${{ github.workspace }}  # Elenca i file nel repository
+          ls ${{ github.workspace }}  # List files in the repository
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Imposta la versione di Node.js su 16
+          node-version: '16'  # Set Node.js version to 16
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps  # Installa le dipendenze del progetto
+        run: npm install --legacy-peer-deps  # Install project dependencies
 
       - name: Build project
-        run: npm run build  # Compila il progetto
+        run: npm run build  # Build the project
 
       - name: Analyze bundle
-        run: npm run analyze  # Analizza il bundle
+        run: npm run analyze  # Analyze the bundle
 
       - name: Run formatter
-        run: npm run format  # Esegue il formattatore di codice
+        run: npm run format  # Run code formatter
 
       - name: Run linter
-        run: npm run lint  # Esegue il linter
+        run: npm run lint  # Run linter
 
       - name: Run security audit
-        run: npm audit --audit-level=high || true  # Esegue l'audit di sicurezza, ma non fallisce in caso di vulnerabilità
+        run: npm audit --audit-level=high || true  # Run security audit, but do not fail on vulnerabilities
 
       - name: Run unit tests
-        run: npm test  # Esegue i test unitari
+        run: npm test  # Run unit tests
 
       - name: Generate code coverage
-        run: npm run coverage  # Genera il report di copertura del codice
+        run: npm run coverage  # Generate code coverage report
 
       - name: Type checking
-        run: npm run type-check  # Esegue il controllo dei tipi
+        run: npm run type-check  # Run type checking
 
       - name: Check for dependency updates
-        run: npm outdated  # Controlla se ci sono aggiornamenti per le dipendenze
+        run: npm outdated  # Check for dependency updates
 
       - name: Static code analysis
-        run: npm run static-analysis  # Esegue l'analisi statica del codice
+        run: npm run static-analysis  # Run static code analysis
 
-      - run: echo "🍏 This job's status is ${{ job.status }}."  # Mostra lo stato del job
-      - name: Create completion artifact
-        if: success()
-        run: echo "Development workflow completed" > completion.txt
+      - run: echo "🍏 This job's status is ${{ job.status }}."  # Display the job status
 
-      - name: Upload completion artifact
+      - name: Trigger production deployment
         if: success()
-        uses: actions/upload-artifact@v3
-        with:
-          name: dev-workflow-completion
-          path: completion.txt
+        run: |
+          curl -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/dispatches \
+          -d '{"event_type":"production_deployment"}'
