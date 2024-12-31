@@ -66,12 +66,3 @@ jobs:
         run: npm run static-analysis  # Run static code analysis
 
       - run: echo "🍏 This job's status is ${{ job.status }}."  # Display the job status
-
-      - name: Trigger production deployment
-        if: success()
-        run: |
-          curl -X POST \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/dispatches \
-          -d '{"event_type":"production_deployment"}'

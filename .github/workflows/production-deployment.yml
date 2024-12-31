@@ -2,8 +2,8 @@ name: Production Deployment
 run-name: ${{ github.actor }} is deploying to production 🚀
 
 on:
-  repository_dispatch:
-    types: [production_deployment]
+  pull_request:
+    types: [closed]
 
 permissions:
   contents: read
@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   Explore-GitHub-Actions:
+    if: github.event.pull_request.merged == true  # Check if the pull request was merged
     runs-on: ubuntu-latest  # Use the latest version of Ubuntu as the runner environment
 
     steps:
