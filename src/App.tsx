@@ -5,7 +5,7 @@ import { getAverage } from './utils/get-average/get-average';
 
 function App() {
   const average = getAverage(2, 4, 6);
-// test
+// test3
   return (
     <div className={'App'}>
       <header className={'App-header'}>
