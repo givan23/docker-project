@@ -9,12 +9,12 @@ permissions:
   contents: read
   actions: read
   id-token: write
-  packages: read
+  packages: write  # Update to write permission
 
 jobs:
   Explore-GitHub-Actions:
-    if: github.event.pull_request.merged == true  # Check if the pull request was merged
-    runs-on: ubuntu-latest  # Use the latest version of Ubuntu as the runner environment
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
 
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -22,7 +22,7 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
 
       - name: Check out repository code
-        uses: actions/checkout@v4  # Clone the repository
+        uses: actions/checkout@v4
 
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
@@ -30,61 +30,46 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Set Node.js version to 16
+          node-version: '18'  # Update Node.js version to 18
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps  # Install project dependencies
+        run: npm install --legacy-peer-deps
 
       - name: Build project
-        run: npm run build  # Build the project
+        run: npm run build
 
       - name: Run formatter
-        run: npm run format  # Run code formatter
+        run: npm run format
 
       - name: Run linter
-        run: npm run lint  # Run linter
+        run: npm run lint
 
       - name: Run unit tests
-        run: npm test  # Run unit tests
+        run: npm test
 
       - name: Generate code coverage
-        run: npm run coverage  # Generate code coverage report
+        run: npm run coverage
 
       - name: Run smoke tests
-        run: npm run smoke-test --passWithNoTests # Run smoke tests
+        run: npm run smoke-test --passWithNoTests
 
       - name: Run performance tests
-        run: npm run performance-test --passWithNoTests # Run performance tests
+        run: npm run performance-test --passWithNoTests
 
       - name: Deployment verification
-        run: npm run verify-deployment --passWithNoTests # Verify deployment
+        run: npm run verify-deployment --passWithNoTests
 
       - name: Build Docker image
         run: |
-          # Build the Docker image and tag it as 'docker-project-image:latest'
           docker build -t docker-project-image:latest .
-
-          # Log in to GitHub Container Registry using the PAT
           echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-          # Tag the Docker image for GitHub Container Registry
           docker tag docker-project-image:latest ghcr.io/${{ github.repository }}/docker-project-image:latest
-
-          # Push the Docker image to GitHub Container Registry
           docker push ghcr.io/${{ github.repository }}/docker-project-image:latest
-
-          # Log in to Heroku Container Registry using the Heroku API key
           echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
-
-          # Tag the Docker image for Heroku Container Registry
           docker tag docker-project-image:latest registry.heroku.com/docker-project-app/web
-
-          # Push the Docker image to Heroku Container Registry
           docker push registry.heroku.com/docker-project-app/web
 
       - name: Release Docker image on Heroku
-        run: |
-          # Release the Docker image on Heroku
-          heroku container:release web -a docker-project-app
+        run: heroku container:release web -a docker-project-app
 
-      - run: echo "🍏 This job's status is ${{ job.status }}."  # Display the job status
+      - run: echo "🍏 This job's status is ${{ job.status }}."
