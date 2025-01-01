@@ -64,13 +64,13 @@ jobs:
           # Build the Docker image and tag it as 'docker-project-image:latest'
           docker build -t docker-project-image:latest .
 
-          # Log in to GitHub Container Registry using the GitHub token
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # Log in to GitHub Container Registry using the PAT
+          echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
           # Tag the Docker image for GitHub Container Registry
           docker tag docker-project-image:latest ghcr.io/${{ github.repository }}/docker-project-image:latest
 
-          # Push the Docker image to GitHub Container Registry (usefull for other workflows or deployments and versioning)
+          # Push the Docker image to GitHub Container Registry
           docker push ghcr.io/${{ github.repository }}/docker-project-image:latest
 
           # Log in to Heroku Container Registry using the Heroku API key
@@ -79,7 +79,7 @@ jobs:
           # Tag the Docker image for Heroku Container Registry
           docker tag docker-project-image:latest registry.heroku.com/docker-project-app/web
 
-          # Push the Docker image to Heroku Container Registry (needed for deployment)
+          # Push the Docker image to Heroku Container Registry
           docker push registry.heroku.com/docker-project-app/web
 
       - name: Release Docker image on Heroku
