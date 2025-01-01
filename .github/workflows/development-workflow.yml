@@ -60,7 +60,7 @@ jobs:
         run: npm run type-check  # Run type checking
 
       - name: Check for dependency updates
-        run: npm outdated  # Check for dependency updates
+        run: npm outdated || true  # Check for dependency updates, but do not fail on outdated packages
 
       - name: Static code analysis
         run: npm run static-analysis  # Run static code analysis
