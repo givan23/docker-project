@@ -87,17 +87,4 @@ jobs:
           # Release the Docker image on Heroku
           heroku container:release web -a docker-project-app
 
-      - name: Send email notification
-        if: success()  # Send email notification if the job succeeds
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Deployment Successful
-          body: The deployment was successful!
-          to: ${{ secrets.EMAIL_USERNAME }}
-          from: ${{ secrets.EMAIL_USERNAME }}
-
       - run: echo "🍏 This job's status is ${{ job.status }}."  # Display the job status
