@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:16
+FROM node:18  # Update Node.js version to 18
 
 # Set the working directory
 WORKDIR /app
@@ -21,7 +21,3 @@ EXPOSE 3000
 
 # Start the application
 CMD ["npm", "start"]
-
-
-
-
