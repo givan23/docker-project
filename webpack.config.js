@@ -1,41 +1,33 @@
 const path = require('path');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const CompressionPlugin = require('compression-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 module.exports = {
-  mode: 'development', // You can change to 'production' if needed
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js',
+    filename: '[name].[contenthash].js',
+    clean: true,
   },
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
+            presets: [
+              ['@babel/preset-env', { modules: false }],
+              '@babel/preset-react',
+              '@babel/preset-typescript',
+            ],
+            plugins: process.env.NODE_ENV === 'production' ? ['transform-remove-console'] : [],
           },
         },
-      },
-      {
-        test: /\.(ts|tsx)$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: [
-                '@babel/preset-env',
-                '@babel/preset-react',
-                '@babel/preset-typescript',
-              ],
-            },
-          },
-          'ts-loader',
-        ],
       },
       {
         test: /\.css$/,
@@ -53,10 +45,34 @@ module.exports = {
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    },
+    runtimeChunk: 'single',
+    minimize: true,
+    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
+  },
   plugins: [
     new BundleAnalyzerPlugin({
-      analyzerMode: 'static', // Generates a static report in an HTML file
-      openAnalyzer: false, // Does not automatically open the report in the browser
+      analyzerMode: 'static',
+      openAnalyzer: false,
+    }),
+    new CompressionPlugin({
+      algorithm: 'gzip',
+      test: /\.(js|css|html|svg)$/,
+      threshold: 10240,
+      minRatio: 0.8,
     }),
   ],
+  cache: {
+    type: 'filesystem',
+  },
 };
